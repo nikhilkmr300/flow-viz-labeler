@@ -35,27 +35,33 @@ def draw_circle(event, x, y, flags, params):
     if event == cv2.EVENT_LBUTTONDOWN:
         is_drawing = True
         x0, y0 = x, y
-        print("L down")
 
     elif event == cv2.EVENT_MOUSEMOVE:
         radius =  int(math.sqrt((x - x0)**2 + (y - y0)**2))
         if is_drawing:
-            print(f"center={(x0, y0)}, radius={radius}")
             cv2.circle(img, (x0, y0), radius, (0, 0, 255), 3)
 
     elif event == cv2.EVENT_LBUTTONUP:
         radius =  int(math.sqrt((x - x0)**2 + (y - y0)**2))
         cv2.circle(img, (x0, y0), radius, (0, 0, 255), -1)
         is_drawing = False
-        print("L up")
+
+        record = {
+            "filename": params["input_filename"],
+            "center": [x0, y0],
+            "radius": radius
+        }
+        with open(params["output_filepath"], 'a') as f:
+            f.write(str(record) + "\n")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.stderr(f"Usage: ./flow-viz-labeler.py <path>")
+    if len(sys.argv) != 3:
+        sys.stderr(f"Usage: ./flow-viz-labeler.py <input_dir/input_image> <output_filepath>")
         sys.exit(-1)
 
     dirpath = sys.argv[1]
+    output_filepath = sys.argv[2]
 
     if os.path.isfile(dirpath):
         img = load_image(dirpath)
@@ -67,7 +73,8 @@ if __name__ == "__main__":
             try:
                 img = load_image(os.path.join(dirpath, filename))
                 cv2.imshow(IMG_PANE_NAME, img)
-                cv2.setMouseCallback(IMG_PANE_NAME, draw_circle)
+                params = {"input_filename": filename, "output_filepath": output_filepath}
+                cv2.setMouseCallback(IMG_PANE_NAME, draw_circle, params)
                 cv2.waitKey(0)
             except InvalidFiletypeError:
                 sys.stderr(
