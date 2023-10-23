@@ -5,6 +5,7 @@ import os
 import sys
 
 import cv2
+import numpy as np
 
 VALID_EXTS = {".png", ".jpg", ".jpeg"}
 IMG_PANE_NAME = "Vortices"
@@ -30,20 +31,22 @@ def load_image(filepath):
 x0, y0 = -1, -1     # Circle center
 is_drawing = False
 def draw_circle(event, x, y, flags, params):
-    global x0, y0, is_drawing, img
+    global x0, y0, is_drawing
 
     if event == cv2.EVENT_LBUTTONDOWN:
         is_drawing = True
         x0, y0 = x, y
+        print("L down")
 
     elif event == cv2.EVENT_MOUSEMOVE:
         radius =  int(math.sqrt((x - x0)**2 + (y - y0)**2))
         if is_drawing:
-            cv2.circle(img, (x0, y0), radius, (0, 0, 255), 3)
+            cv2.circle(params["image"], (x0, y0), radius, (0, 0, 255), 1)
+            print("Drawing")
 
     elif event == cv2.EVENT_LBUTTONUP:
         radius =  int(math.sqrt((x - x0)**2 + (y - y0)**2))
-        cv2.circle(img, (x0, y0), radius, (0, 0, 255), -1)
+        cv2.circle(params["image"], (x0, y0), radius, (0, 0, 255), 1)
         is_drawing = False
 
         record = {
@@ -55,32 +58,73 @@ def draw_circle(event, x, y, flags, params):
             f.write(str(record) + "\n")
 
 
+def render_image(filepath):
+    try:
+        img = load_image(filepath)
+    except InvalidFiletypeError:
+        ext = os.path.splitext(filepath)[1]
+        sys.stderr(f"Found incompatible file extension {ext}. Extensions must be one among {VALID_EXTS}.")
+        return
+
+    cv2.namedWindow(IMG_PANE_NAME)
+    params = {"image": img, "input_filename": os.path.basename(filepath), "output_filepath": output_filepath}
+    cv2.setMouseCallback(IMG_PANE_NAME, draw_circle, params)
+
+    while True:
+        cv2.imshow(IMG_PANE_NAME, img)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            break
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        sys.stderr(f"Usage: ./flow-viz-labeler.py <input_dir/input_image> <output_filepath>")
+        sys.stderr(f"Usage: ./flow-viz-labeler.py <input_dir_path/input_image_path> <output_filepath>")
         sys.exit(-1)
 
     dirpath = sys.argv[1]
     output_filepath = sys.argv[2]
 
-    if os.path.isfile(dirpath):
-        img = load_image(dirpath)
-        cv2.imshow(IMG_PANE_NAME, img)
-        cv2.waitKey(0)
+    print("[q] Quit")
 
+    if os.path.isfile(dirpath):
+        render_image(dirpath)
     elif os.path.isdir(dirpath):
         for filename in sorted(os.listdir(dirpath)):
-            try:
-                img = load_image(os.path.join(dirpath, filename))
-                cv2.imshow(IMG_PANE_NAME, img)
-                params = {"input_filename": filename, "output_filepath": output_filepath}
-                cv2.setMouseCallback(IMG_PANE_NAME, draw_circle, params)
-                cv2.waitKey(0)
-            except InvalidFiletypeError:
-                sys.stderr(
-                    f'File has invalid type: "{filename}". Files must have extension among {VALID_EXTS}.'
-                )
-
+            render_image(os.path.join(dirpath, filename))
     else:
         sys.stderr(f'Could not open file/directory at "{dirpath}".')
         sys.exit(-1)
+
+# import numpy as np
+# import cv2 as cv
+
+# drawing = False # true if mouse is pressed
+# mode = True # if True, draw rectangle. Press 'm' to toggle to curve
+# ix,iy = -1,-1
+# # mouse callback function
+# def draw_circle(event,x,y,flags,param):
+#     global ix,iy,drawing,mode
+#     if event == cv.EVENT_LBUTTONDOWN:
+#         drawing = True
+#         ix,iy = x,y
+#     elif event == cv.EVENT_MOUSEMOVE:
+#         if drawing == True:
+#             cv.circle(img,(x,y),5,(0,0,255),-1)
+#     elif event == cv.EVENT_LBUTTONUP:
+#         drawing = False
+
+#     cv.circle(img,(x,y),5,(0,0,255),-1)
+
+# img = np.zeros((512,512,3), np.uint8)
+# cv.namedWindow('image')
+# cv.setMouseCallback('image',draw_circle)
+
+# while(1):
+#     cv.imshow('image',img)
+#     k = cv.waitKey(1) & 0xFF
+#     if k == ord('m'):
+#         mode = not mode
+#     elif k == 27:
+#         break
+
+# cv.destroyAllWindows()
