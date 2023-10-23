@@ -74,8 +74,10 @@ def render_image(filepath):
     while True:
         cv2.imshow(IMG_PANE_NAME, img)
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
-            break
+        if key in {ord('n'), ord('N')}:
+            return 0
+        elif key in {ord('q'), ord('Q')}:
+            return 1
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -85,13 +87,16 @@ if __name__ == "__main__":
     dirpath = sys.argv[1]
     output_filepath = sys.argv[2]
 
+    print("[n] Next")
     print("[q] Quit")
 
     if os.path.isfile(dirpath):
         render_image(dirpath)
     elif os.path.isdir(dirpath):
         for filename in sorted(os.listdir(dirpath)):
-            render_image(os.path.join(dirpath, filename))
+            quit = render_image(os.path.join(dirpath, filename))
+            if quit:
+                sys.exit(-1)
     else:
         sys.stderr(f'Could not open file/directory at "{dirpath}".')
         sys.exit(-1)
