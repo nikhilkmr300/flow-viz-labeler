@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import copy
 import math
 import os
 import sys
@@ -30,23 +31,23 @@ def load_image(filepath):
 
 x0, y0 = -1, -1     # Circle center
 is_drawing = False
+
 def draw_circle(event, x, y, flags, params):
     global x0, y0, is_drawing
 
     if event == cv2.EVENT_LBUTTONDOWN:
         is_drawing = True
         x0, y0 = x, y
-        print("L down")
+        cv2.circle(params["image"], (x0, y0), 5, (0, 255, 0), -1)
 
     elif event == cv2.EVENT_MOUSEMOVE:
         radius =  int(math.sqrt((x - x0)**2 + (y - y0)**2))
         if is_drawing:
-            cv2.circle(params["image"], (x0, y0), radius, (0, 0, 255), 1)
-            print("Drawing")
+            cv2.circle(params["image"], (x, y), 2, (0, 0, 255), -1)
 
     elif event == cv2.EVENT_LBUTTONUP:
         radius =  int(math.sqrt((x - x0)**2 + (y - y0)**2))
-        cv2.circle(params["image"], (x0, y0), radius, (0, 0, 255), 1)
+        cv2.circle(params["image"], (x0, y0), radius, (0, 255, 0), 3)
         is_drawing = False
 
         record = {
