@@ -94,7 +94,6 @@ def render_image(filepath):
         )
         return
 
-    original_img = copy.deepcopy(img)
     filename = os.path.basename(filepath)
 
     cv2.namedWindow(IMG_PANE_NAME)
@@ -111,7 +110,6 @@ def render_image(filepath):
         if key in {ord("n"), ord("N")}:
             return 0
         elif key in {ord("s"), ord("S")}:
-            img = original_img
             delete_records(filename, output_filepath)
             return 0
         elif key in {ord("q"), ord("Q")}:
