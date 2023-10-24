@@ -29,7 +29,7 @@ def load_image(filepath):
         raise FileNotFoundError(f'Could not open image at "{filepath}".')
 
     return cv2.putText(
-        img, filepath, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3
+        img, os.path.basename(filepath), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2
     )
 
 
