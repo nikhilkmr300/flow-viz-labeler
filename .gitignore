@@ -1,5 +1,8 @@
 *.jpg
 *.jsonl
 *.png
+*.spec
 .DS_Store
 .venv
+build
+dist
