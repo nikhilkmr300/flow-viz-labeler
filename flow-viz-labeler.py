@@ -111,6 +111,8 @@ def render_image(filepath):
             return 0
         elif key in {ord("s"), ord("S")}:
             delete_records(filename, output_filepath)
+            with open(output_filepath, 'a') as f:
+                f.write(json.dumps({"filename": filename, "status": "scrapped"}) + "\n")
             return 0
         elif key in {ord("q"), ord("Q")}:
             return 1
